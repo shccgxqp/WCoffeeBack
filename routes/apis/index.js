@@ -1,20 +1,23 @@
-const express = require('express');
-const router = express.Router();
-const passport = require('../../config/passport');
-const userController = require('../../controllers/apis/user-controller');
+const express = require('express')
+const router = express.Router()
+const passport = require('../../config/passport')
+const userController = require('../../controllers/apis/user-controller')
+const productController = require('../../controllers/apis/product-controller')
 
-const { apiErrorHandler } = require('../../middleware/error-handler');
-// const { authenticated, authenticatedAdmin } = require('../../middleware/api-auth')
+const { apiErrorHandler } = require('../../middleware/error-handler')
+const { authenticated } = require('../../middleware/api-auth')
 
-router.post(
-  '/signin',
-  passport.authenticate('local', { session: false }),
-  userController.signIn
-);
-router.post('/signup', userController.signUp);
+router.get('/products/:id', productController.getProductById)
+router.get('/products', productController.getProducts)
 
-router.get('/users');
+router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn)
+router.post('/signup', userController.signUp)
 
-router.use('/', apiErrorHandler);
+router.get('/users/order/:Id', authenticated, userController.getOrderById)
+router.get('/users/order', authenticated, userController.getOrder)
+// router.get('/users/:id',authenticated, userController.getUsers)
+// router.get('/users', authenticated, userController.getUsers)
 
-module.exports = router;
+router.use('/', apiErrorHandler)
+
+module.exports = router
