@@ -13,10 +13,16 @@ router.get('/products', productController.getProducts)
 router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn)
 router.post('/signup', userController.signUp)
 
-router.get('/users/order/:Id', authenticated, userController.getOrderById)
-router.get('/users/order', authenticated, userController.getOrder)
-// router.get('/users/:id',authenticated, userController.getUsers)
-// router.get('/users', authenticated, userController.getUsers)
+router.get('/user/order/:id', authenticated, userController.getOrderById)
+router.get('/user/order', authenticated, userController.getOrder)
+
+router.get('/user/shipment/:id', authenticated, userController.getShipmentById)
+router.get('/user/shipment', authenticated, userController.getShipment)
+router.post('/user/shipment', authenticated, userController.postShipment)
+router.patch('/user/shipment/:id', authenticated, userController.patchShipmentById)
+router.delete('/user/shipment/:id', authenticated, userController.deleteShipmentById)
+
+router.get('/user', authenticated, userController.getUser)
 
 router.use('/', apiErrorHandler)
 
