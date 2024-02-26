@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       total: DataTypes.DECIMAL,
       status: DataTypes.STRING,
       comments: DataTypes.STRING,
+      cancel: DataTypes.DATE,
     },
     {
       sequelize,

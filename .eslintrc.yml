@@ -11,3 +11,5 @@ rules:
   arrow-parens:
     - warn
     - as-needed
+  camelcase: -error
+  properties: -never

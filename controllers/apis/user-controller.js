@@ -51,6 +51,16 @@ const userController = {
       err ? next(err) : res.json({ status: 'success', data })
     )
   },
+  postOrder(req, res, next) {
+    userServices.postOrder(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  patchOrderById(req, res, next) {
+    userServices.patchOrderById(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
 }
 
 module.exports = userController

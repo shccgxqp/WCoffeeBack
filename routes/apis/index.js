@@ -15,6 +15,8 @@ router.post('/signup', userController.signUp)
 
 router.get('/user/order/:id', authenticated, userController.getOrderById)
 router.get('/user/order', authenticated, userController.getOrder)
+router.post('/user/order', authenticated, userController.postOrder)
+router.patch('/user/order/:id', authenticated, userController.patchOrderById)
 
 router.get('/user/shipment/:id', authenticated, userController.getShipmentById)
 router.get('/user/shipment', authenticated, userController.getShipment)
