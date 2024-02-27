@@ -1,26 +1,27 @@
 module.exports = {
   generalErrorHandler(err, req, res, next) {
     if (err instanceof Error) {
-      req.flash('error_messages', `${err.name}: ${err.message}`);
+      req.flash('error_messages', `${err.name}: ${err.message}`)
     } else {
-      req.flash('error_messages', `${err}`);
+      req.flash('error_messages', `${err}`)
     }
-    res.redirect('back');
+    res.redirect('back')
 
-    next(err);
+    next(err)
   },
   apiErrorHandler(err, req, res, next) {
     if (err instanceof Error) {
       res.status(err.status || 500).json({
         status: 'error',
-        message: `${err.name}: ${err.message}`,
-      });
+        name: err.name,
+        message: err.message,
+      })
     } else {
       res.status(500).json({
         status: 'error',
         message: `${err}`,
-      });
+      })
     }
-    next(err);
+    next(err)
   },
-};
+}

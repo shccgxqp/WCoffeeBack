@@ -1,22 +1,22 @@
 if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
+  require('dotenv').config()
 }
 
-const express = require('express');
-const app = express();
+const express = require('express')
+const app = express()
 
-const { apis } = require('./routes');
-const port = process.env.PORT || 3000;
+const { apis } = require('./routes')
+const port = process.env.PORT || 3000
 
-app.use(express.json());
+app.use(express.json())
 
 app.get('/status', (request, response) => {
-  const status = { Status: 'Running' };
-  response.json(status);
-});
+  const status = { Status: 'Running' }
+  response.json(status)
+})
 
-app.use('/api', apis);
+app.use('/api', apis)
 
 app.listen(port, () => {
-  console.log(`Server is running on port http://localhost:${port}`);
-});
+  console.log(`Server is running on port http://localhost:${port}`)
+})

@@ -239,6 +239,7 @@ const userServices = {
         ],
         raw: true,
       })
+      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
 
       const data = orders.map(order => ({
         id: order.id,
