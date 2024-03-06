@@ -13,7 +13,6 @@ router.delete('/products/:id', adminController.deleteProductById)
 
 router.get('/orders', adminController.getOrders)
 router.get('/orders/:id', adminController.getOrderById)
-router.post('/orders', adminController.postOrder)
 router.patch('/orders/:id', adminController.patchOrderById)
 router.delete('/orders/:id', adminController.deleteOrderById)
 

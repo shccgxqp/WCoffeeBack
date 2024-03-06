@@ -1,6 +1,7 @@
 const passport = require('../config/passport') // 引入 passport
 
 const authenticated = (req, res, next) => {
+  // const token = req.cookies.token || req.headers.authorization?.split(' ')[1]
   return new Promise((resolve, reject) => {
     passport.authenticate('jwt', { session: false }, (err, user) => {
       if (err || !user) {

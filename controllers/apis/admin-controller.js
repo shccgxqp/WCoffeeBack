@@ -11,11 +11,6 @@ const adminController = {
       err ? next(err) : res.json({ status: 'success', data })
     )
   },
-  postOrder: (req, res, next) => {
-    adminServices.postOrder(req, (err, data) =>
-      err ? next(err) : res.json({ status: 'success', data })
-    )
-  },
   patchOrderById: (req, res, next) => {
     adminServices.patchOrderById(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })

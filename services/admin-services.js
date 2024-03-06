@@ -1,12 +1,14 @@
-const { User, Product, Category, Origin, Unit } = require('../models')
+const { Order, User, Product, Category, Origin, Unit, OrderItem, Shipment } = require('../models')
 const { localFileHandler } = require('../helpers/file-helpers')
-
+const db = require('../models')
+const { processOrders, processProducts } = require('../helpers/process-helpers')
 const adminServices = {
   getOrders: async (req, cb) => {
     try {
-      const data = await Order.findAll({
+      const orders = await Order.findAll({
         attributes: ['id', 'sub_total', 'total', 'status', 'comments'],
         include: [
+          { model: User, attributes: ['name', 'email'] },
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
           {
             model: Product,
@@ -17,6 +19,9 @@ const adminServices = {
         ],
         raw: true,
       })
+
+      const data = processOrders(orders)
+
       cb(null, data)
     } catch (error) {
       cb(error)
@@ -24,15 +29,28 @@ const adminServices = {
   },
   getOrderById: async (req, cb) => {
     try {
-      const data = await Order.findOne({ where: { id: req.params.id } })
-      cb(null, data)
-    } catch (error) {
-      cb(error)
-    }
-  },
-  postOrder: async (req, cb) => {
-    try {
-      const data = await Order.create(req.body)
+      const id = req.params.id
+      const orders = await Order.findAll({
+        where: { id },
+        attributes: ['id', 'sub_total', 'total', 'status', 'comments'],
+        include: [
+          { model: User, attributes: ['name', 'email'] },
+          { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
+          {
+            model: Product,
+            as: 'OrderItemsProduct',
+            attributes: ['name', 'price', 'weight', 'roast', 'image'],
+            through: {
+              attributes: ['qty'],
+            },
+          },
+        ],
+        raw: true,
+      })
+
+      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
+      const data = processOrders(orders)
+
       cb(null, data)
     } catch (error) {
       cb(error)
@@ -48,8 +66,18 @@ const adminServices = {
   },
   deleteOrderById: async (req, cb) => {
     try {
-      const data = await Order.destroy({ where: { id: req.params.id } })
-      cb(null, data)
+      const id = req.params.id
+      const transaction = await db.sequelize.transaction()
+      const orderToDelete = await Order.findByPk(id, { transaction })
+
+      if (orderToDelete) {
+        await OrderItem.destroy({ where: { orderId: id }, transaction })
+        await Order.destroy({ where: { id }, transaction })
+        await transaction.commit()
+        cb(null, `已刪除訂單編號: ${id}`)
+      } else {
+        throw new Error(`訂單編號: ${id} 查詢失敗。`)
+      }
     } catch (error) {
       cb(error)
     }
@@ -66,8 +94,10 @@ const adminServices = {
   },
   getProducts: async (req, cb) => {
     try {
-      const page = req.query.page || 1
-      const limit = req.query.limit ? Math.min(Math.max(parseInt(req.query.limit), 8), 24) : 8
+      const page = parseInt(req.query.page) || 1
+      const limit = parseInt(req.query.limit)
+        ? Math.min(Math.max(parseInt(req.query.limit), 8), 24)
+        : 8
       const data = await Product.findAll({
         include: [
           { model: Category, attributes: ['name'] },
@@ -79,18 +109,7 @@ const adminServices = {
       })
       if (data.length === 0) throw new Error('沒有找到商品')
 
-      const products = data.map(product => ({
-        id: product.id,
-        name: product.name,
-        Category: product['Category.name'],
-        Origin: product['Origin.name'],
-        Unit: product['Unit.name'],
-        price: product.price,
-        weight: product.weight,
-        roast: product.roast,
-        image: product.image,
-        description: product.description,
-      }))
+      const products = processProducts(data)
 
       cb(null, products)
     } catch (error) {
@@ -108,18 +127,7 @@ const adminServices = {
         raw: true,
       })
 
-      const product = {
-        id: data.id,
-        name: data.name,
-        Category: data['Category.name'],
-        Origin: data['Origin.name'],
-        Unit: data['Unit.name'],
-        price: data.price,
-        weight: data.weight,
-        roast: data.roast,
-        image: data.image,
-        description: data.description,
-      }
+      const product = processProducts([data])
 
       cb(null, product)
     } catch (error) {

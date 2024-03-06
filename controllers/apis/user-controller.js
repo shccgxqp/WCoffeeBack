@@ -2,9 +2,14 @@ const userServices = require('../../services/user-services')
 
 const userController = {
   signIn: (req, res, next) => {
-    userServices.signIn(req, (err, data) =>
-      err ? next(err) : res.json({ status: 'success', data })
-    )
+    userServices.signIn(req, (err, data) => {
+      if (err) return next(err)
+      res.cookie('token', data.token, {
+        maxAge: 60 * 60 * 24 * 1000,
+        httpOnly: true,
+      })
+      res.json({ status: 'success', data })
+    })
   },
   signUp: (req, res, next) => {
     userServices.signUp(req, (err, data) =>

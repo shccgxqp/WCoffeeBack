@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 
 const db = require('../models')
 const { User, Order, OrderItem, Product, Shipment } = db
+const { processOrders } = require('../helpers/process-helpers')
 
 const userServices = {
   signIn: async (req, cb) => {
@@ -44,7 +45,6 @@ const userServices = {
     try {
       const user = await User.findOne({ where: { id: req.user.id } })
       if (!user) throw new Error('User not found!')
-
       const userData = user.toJSON()
       delete userData.password
       cb(null, userData)
@@ -56,7 +56,11 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const shipments = await Shipment.findAll({ where: { userId: reqUserId } })
-      if (!shipments || shipments.length === 0) throw new Error('請建立貨運資料!')
+      if (!shipments || shipments.length === 0) {
+        const error = new Error('請建立配送資料!')
+        error.status = 401
+        throw error
+      }
 
       const shipmentData = shipments.map(shipment => shipment.toJSON())
       cb(null, shipmentData)
@@ -69,7 +73,11 @@ const userServices = {
       const reqUserId = req.user.id
       const id = req.params.id
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
-      if (!shipment) throw new Error('找不到貨運資料!')
+      if (!shipment) {
+        const error = new Error('找不到貨運資料!')
+        error.status = 401
+        throw error
+      }
       const shipmentData = shipment.toJSON()
       cb(null, shipmentData)
     } catch (err) {
@@ -80,12 +88,19 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const { address, city, country, state, zip_code } = req.body
-
-      if (!address || !city || !country || !state || !zip_code)
-        throw new Error('請填寫所有必要的地址資料!')
+      console.log(address, city, country, state, zip_code)
+      if (!address || !city || !country || !state || !zip_code) {
+        const error = new Error('請填寫所有必要的地址資料!')
+        error.status = 401
+        throw error
+      }
 
       const existingShipment = await Shipment.findOne({ where: { userId: reqUserId, state } })
-      if (existingShipment) throw new Error('請勿重複建立相同狀態的貨運資料!')
+      if (existingShipment) {
+        const error = new Error('配送名稱已存在，請確認!')
+        error.status = 401
+        throw error
+      }
 
       const shipment = await Shipment.create({
         address,
@@ -166,54 +181,11 @@ const userServices = {
         raw: true,
       })
 
-      // 初始化目標鍵和索引陣列
-      const targetKey = 'OrderItemsProduct.OrderItems.orderId'
-      const data = []
-      const indexMap = new Map()
-
+      const data = processOrders(orders)
       // 將訂單資料組織成結構化的物件
-      orders.forEach(order => {
-        const orderId = order[targetKey]
-        const orderData = {
-          id: order.id,
-          sub_total: order.sub_total,
-          total: order.total,
-          status: order.status,
-          comments: order.comments,
-          Shipment: [
-            {
-              address: order['Shipment.address'],
-              city: order['Shipment.city'],
-              state: order['Shipment.state'],
-              country: order['Shipment.country'],
-              zip_code: order['Shipment.zip_code'],
-            },
-          ],
-          OrderItemsProduct: [
-            {
-              name: order['OrderItemsProduct.name'],
-              price: order['OrderItemsProduct.price'],
-              weight: order['OrderItemsProduct.weight'],
-              roast: order['OrderItemsProduct.roast'],
-              image: order['OrderItemsProduct.image'],
-              qty: order['OrderItemsProduct.OrderItems.qty'],
-            },
-          ],
-        }
-
-        // 如果索引陣列中存在該訂單ID，則將產品信息合併到該訂單中
-        if (indexMap.has(orderId)) {
-          const index = indexMap.get(orderId)
-          data[index].OrderItemsProduct.push(orderData.OrderItemsProduct[0])
-        } else {
-          // 否則新增一個訂單並添加到索引陣列中
-          data.push(orderData)
-          indexMap.set(orderId, data.length - 1)
-        }
-      })
 
       // 回調函數返回訂單數據
-      cb(null, [...data])
+      cb(null, [data])
     } catch (error) {
       // 捕獲任何錯誤並進行處理，回調函數返回錯誤訊息
       cb(error)
@@ -239,34 +211,9 @@ const userServices = {
         ],
         raw: true,
       })
-      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
 
-      const data = orders.map(order => ({
-        id: order.id,
-        sub_total: order.sub_total,
-        total: order.total,
-        status: order.status,
-        comments: order.comments,
-        Shipment: [
-          {
-            address: order['Shipment.address'],
-            city: order['Shipment.city'],
-            state: order['Shipment.state'],
-            country: order['Shipment.country'],
-            zip_code: order['Shipment.zip_code'],
-          },
-        ],
-        OrderItemsProduct: [
-          {
-            name: order['OrderItemsProduct.name'],
-            price: order['OrderItemsProduct.price'],
-            weight: order['OrderItemsProduct.weight'],
-            roast: order['OrderItemsProduct.roast'],
-            image: order['OrderItemsProduct.image'],
-            qty: order['OrderItemsProduct.OrderItems.qty'],
-          },
-        ],
-      }))
+      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
+      const data = processOrders(orders)
 
       cb(null, data)
     } catch (error) {

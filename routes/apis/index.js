@@ -3,7 +3,7 @@ const router = express.Router()
 const passport = require('../../config/passport')
 
 const admin = require('./modules/admin')
-
+const upload = require('../../middleware/multer')
 const userController = require('../../controllers/apis/user-controller')
 const productController = require('../../controllers/apis/product-controller')
 
@@ -25,8 +25,13 @@ router.patch('/user/orders/:id', authenticated, userController.patchOrderById)
 
 router.get('/user/shipment/:id', authenticated, userController.getShipmentById)
 router.get('/user/shipment', authenticated, userController.getShipment)
-router.post('/user/shipment', authenticated, userController.postShipment)
-router.patch('/user/shipment/:id', authenticated, userController.patchShipmentById)
+router.post('/user/shipment', upload.single('image'), authenticated, userController.postShipment)
+router.patch(
+  '/user/shipment/:id',
+  upload.single('image'),
+  authenticated,
+  userController.patchShipmentById
+)
 router.delete('/user/shipment/:id', authenticated, userController.deleteShipmentById)
 
 router.get('/user', authenticated, userController.getUser)

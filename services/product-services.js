@@ -1,32 +1,31 @@
 const db = require('../models')
 const { Product, Category, Origin, Unit } = db
+const { processOrders, processProducts } = require('../helpers/process-helpers')
 
 const productServices = {
   getProducts: async (req, cb) => {
     try {
+      const page = parseInt(req.query.page) || 1
+      const limit = parseInt(req.query.limit) || 8
+
+      const totalCount = await Product.count()
       const data = await Product.findAll({
         include: [
           { model: Category, attributes: ['name'] },
           { model: Origin, attributes: ['name'] },
           { model: Unit, attributes: ['name'] },
         ],
+        limit,
+        offset: (page - 1) * limit,
         raw: true,
       })
-
-      const products = data.map(product => ({
-        id: product.id,
-        name: product.name,
-        Category: product['Category.name'],
-        Origin: product['Origin.name'],
-        Unit: product['Unit.name'],
-        price: product.price,
-        weight: product.weight,
-        roast: product.roast,
-        image: product.image,
-        description: product.description,
-      }))
-
-      cb(null, products)
+      if (data.length === 0) {
+        const error = new Error('沒有找到商品')
+        error.status = 401
+        throw error
+      }
+      const products = processProducts(data)
+      cb(null, { totalCount, products })
     } catch (err) {
       cb(err, null)
     }
@@ -42,18 +41,7 @@ const productServices = {
         raw: true,
       })
 
-      const product = {
-        id: data.id,
-        name: data.name,
-        Category: data['Category.name'],
-        Origin: data['Origin.name'],
-        Unit: data['Unit.name'],
-        price: data.price,
-        weight: data.weight,
-        roast: data.roast,
-        image: data.image,
-        description: data.description,
-      }
+      const product = processProducts([data])
 
       cb(null, product)
     } catch (err) {
