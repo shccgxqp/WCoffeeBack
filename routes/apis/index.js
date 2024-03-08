@@ -16,7 +16,7 @@ router.get('/products/:id', productController.getProductById)
 router.get('/products', productController.getProducts)
 
 router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn)
-router.post('/signup', userController.signUp)
+router.post('/signup', upload.single('image'), userController.signUp)
 
 router.get('/user/orders/:id', authenticated, userController.getOrderById)
 router.get('/user/orders', authenticated, userController.getOrder)

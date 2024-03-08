@@ -11,6 +11,8 @@ const processHelpers = {
         total: order.total,
         status: order.status,
         comments: order.comments,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
         Shipment: [
           {
             address: order['Shipment.address'],
