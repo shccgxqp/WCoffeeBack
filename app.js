@@ -5,19 +5,31 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
+const session = require('express-session')
 const app = express()
+const passport = require('./config/passport')
 
 const { apis } = require('./routes')
 const port = process.env.PORT || 3060
 
 app.use(express.json())
-
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 )
+
+app.use(
+  session({
+    secret: 'ThisIsSecret',
+    resave: false,
+    saveUninitialized: false,
+  })
+)
+app.use(passport.initialize())
+app.use(passport.session())
+
 app.use(cookieParser())
 app.use('/images', express.static('upload'))
 app.get('/status', (request, response) => {

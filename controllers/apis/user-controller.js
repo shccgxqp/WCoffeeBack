@@ -16,6 +16,20 @@ const userController = {
       err ? next(err) : res.json({ status: 'success', data })
     )
   },
+  logout: (req, res, next) => {
+    res.clearCookie('token', { httpOnly: true, domain: process.env.COOKIES_DOMAIN, path: '/' })
+    res.json({ status: 'success', message: 'Logged out successfully' })
+  },
+  checkLogin: (req, res, next) => {
+    userServices.checkLogin(req, (err, data) => {
+      if (err) return next(err)
+      res.cookie('token', data.token, {
+        maxAge: 60 * 60 * 24 * 1000,
+        httpOnly: true,
+      })
+      res.json({ status: 'success', data })
+    })
+  },
   getUser: (req, res, next) => {
     userServices.getUser(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })

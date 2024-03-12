@@ -1,6 +1,7 @@
 const passport = require('passport')
 const passportJWT = require('passport-jwt')
-
+const FacebookStrategy = require('passport-facebook').Strategy
+const GoogleStrategy = require('passport-google-oauth20').Strategy
 const bcrypt = require('bcryptjs')
 const db = require('../models')
 const { User } = db
@@ -37,6 +38,68 @@ passport.use(
     }
   )
 )
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+      profileFields: ['email', 'displayName'],
+    },
+    async function (accessToken, refreshToken, profile, cb) {
+      try {
+        const email = profile._json.email
+        const last_name = profile.displayName.substr(0, 1)
+        const first_name = profile.displayName.substr(1)
+        const user = await User.findOne({ where: { email } })
+        if (user) return cb(null, user)
+        const randomPwd = Math.random().toString(36).slice(-8)
+        const hash = await bcrypt.hash(randomPwd, 10)
+        const userData = {
+          last_name,
+          first_name,
+          email,
+          password: hash,
+        }
+        const newUser = await User.create(userData)
+        cb(null, newUser)
+      } catch (err) {
+        cb(err)
+      }
+    }
+  )
+)
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    },
+    async function (accessToken, refreshToken, profile, cb) {
+      try {
+        const { email, family_name, given_name } = profile._json
+        const user = await User.findOne({ where: { email } })
+        if (user) return cb(null, user)
+        const randomPwd = Math.random().toString(36).slice(-8)
+        const hash = await bcrypt.hash(randomPwd, 10)
+        const userData = {
+          last_name: family_name,
+          first_name: given_name,
+          email,
+          password: hash,
+        }
+        const newUser = await User.create(userData)
+        cb(null, newUser)
+      } catch (err) {
+        cb(err)
+      }
+    }
+  )
+)
+
 const extractTokenFromCookie = req => {
   if (req && req.cookies && req.cookies.token) {
     return req.cookies.token

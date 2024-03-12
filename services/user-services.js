@@ -77,6 +77,20 @@ const userServices = {
       cb(err)
     }
   },
+  checkLogin: async (req, cb) => {
+    try {
+      if (!req.user) {
+        cb(null, { isLogin: false, isAdmin: false })
+      } else {
+        const user = await User.findOne({ where: { id: req.user.id } })
+        delete user.password
+        const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {})
+        cb(null, { isLogin: true, isAdmin: user.isAdmin, token })
+      }
+    } catch (err) {
+      cb(err)
+    }
+  },
   getUser: async (req, cb) => {
     try {
       const user = await User.findOne({

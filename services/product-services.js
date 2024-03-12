@@ -7,9 +7,11 @@ const productServices = {
     try {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 8
+      const Category_id = parseInt(req.query.categoryId) || 3
 
-      const totalCount = await Product.count()
+      const totalCount = await Product.count({ where: { Category_id } })
       const data = await Product.findAll({
+        where: { Category_id },
         include: [
           { model: Category, attributes: ['name'] },
           { model: Origin, attributes: ['name'] },

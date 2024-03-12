@@ -5,7 +5,8 @@ const authenticated = (req, res, next) => {
   return new Promise((resolve, reject) => {
     passport.authenticate('jwt', { session: false }, (err, user) => {
       if (err || !user) {
-        return reject(new Error('使用者沒有權限，請先登入!'))
+        return err
+        // return reject(new Error('使用者沒有權限，請先登入!'))
       }
       req.user = user
       resolve()

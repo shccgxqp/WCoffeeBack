@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('../../config/passport')
-
+const jwt = require('jsonwebtoken')
 const admin = require('./modules/admin')
 const upload = require('../../middleware/multer')
 const userController = require('../../controllers/apis/user-controller')
@@ -18,6 +18,9 @@ router.get('/products', productController.getProducts)
 router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn)
 router.post('/signup', upload.single('image'), userController.signUp)
 
+router.get('/user/logout', userController.logout)
+router.get('/user/checkLogin', userController.checkLogin)
+
 router.get('/user/orders/:id', authenticated, userController.getOrderById)
 router.get('/user/orders', authenticated, userController.getOrder)
 router.post('/user/orders', authenticated, userController.postOrder)
@@ -33,6 +36,23 @@ router.patch(
   userController.patchShipmentById
 )
 router.delete('/user/shipment/:id', authenticated, userController.deleteShipmentById)
+
+router.get('/login/facebook', passport.authenticate('facebook', { scope: ['email'] }))
+router.get(
+  '/auth/facebook/callback',
+  passport.authenticate('facebook', { successRedirect: ['http://localhost:3000'] })
+)
+
+router.get(
+  '/login/google',
+  passport.authenticate('google', {
+    scope: ['email', 'profile'],
+  })
+)
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { successRedirect: ['http://localhost:3000'] })
+)
 
 router.get('/user', authenticated, userController.getUser)
 
