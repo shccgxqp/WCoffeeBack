@@ -1,5 +1,5 @@
-const apis = require('./apis');
+const apis = require('./apis')
 
 module.exports = {
   apis,
-};
+}

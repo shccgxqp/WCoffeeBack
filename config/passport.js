@@ -47,7 +47,7 @@ passport.use(
       callbackURL: process.env.FACEBOOK_CALLBACK_URL,
       profileFields: ['email', 'displayName'],
     },
-    async function (accessToken, refreshToken, profile, cb) {
+    async (accessToken, refreshToken, profile, cb) => {
       try {
         const email = profile._json.email
         const last_name = profile.displayName.substr(0, 1)
@@ -78,7 +78,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
-    async function (accessToken, refreshToken, profile, cb) {
+    async (accessToken, refreshToken, profile, cb) => {
       try {
         const { email, family_name, given_name } = profile._json
         const user = await User.findOne({ where: { email } })
@@ -119,14 +119,7 @@ const jwtOptions = {
 
 passport.use(
   new JWTStrategy(jwtOptions, (jwtPayload, cb) => {
-    User.findByPk(jwtPayload.id, {
-      include: [
-        // { model: Restaurant, as: 'FavoritedRestaurants' },
-        // { model: Restaurant, as: 'LikedRestaurants' },
-        // { model: User, as: 'Followers' },
-        // { model: User, as: 'Followings' }
-      ],
-    })
+    User.findByPk(jwtPayload.id)
       .then(user => cb(null, user))
       .catch(err => cb(err))
   })
@@ -137,14 +130,7 @@ passport.serializeUser((user, cb) => {
   cb(null, user.id)
 })
 passport.deserializeUser((id, cb) => {
-  User.findByPk(id, {
-    // include: [
-    //   { model: Restaurant, as: 'FavoritedRestaurants' },
-    //   { model: Restaurant, as: 'LikedRestaurants' },
-    //   { model: User, as: 'Followers' },
-    //   { model: User, as: 'Followings' }
-    // ]
-  })
+  User.findByPk(id)
     .then(user => cb(null, user.toJSON()))
     .catch(err => cb(err))
 })

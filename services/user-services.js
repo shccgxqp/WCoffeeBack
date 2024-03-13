@@ -8,6 +8,7 @@ const { processOrders } = require('../helpers/process-helpers')
 const userServices = {
   signIn: async (req, cb) => {
     try {
+      // console.log(req.user)
       const userData = req.user.toJSON()
       delete userData.password
 
@@ -84,8 +85,24 @@ const userServices = {
       } else {
         const user = await User.findOne({ where: { id: req.user.id } })
         delete user.password
-        const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {})
+        const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {
+          expiresIn: '30d',
+        })
         cb(null, { isLogin: true, isAdmin: user.isAdmin, token })
+      }
+    } catch (err) {
+      cb(err)
+    }
+  },
+  checkLoginFbGl: async (req, cb) => {
+    try {
+      if (req.user) {
+        const user = await User.findOne({ where: { id: req.user.id } })
+        delete user.password
+        const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {
+          expiresIn: '30d',
+        })
+        cb(null, { token })
       }
     } catch (err) {
       cb(err)
@@ -105,6 +122,40 @@ const userServices = {
       if (!user) throw new Error('User not found!')
       const userData = user.toJSON()
       delete userData.password
+      cb(null, userData)
+    } catch (err) {
+      cb(err)
+    }
+  },
+  getUserEdit: async (req, cb) => {
+    try {
+      const user = await User.findOne({
+        where: { id: req.user.id },
+        attributes: [
+          'id',
+          'last_name',
+          'first_name',
+          'phone',
+          'birthday',
+          'country',
+          'city',
+          'carrier_code',
+        ],
+      })
+      const userData = user.toJSON()
+      cb(null, userData)
+    } catch (err) {
+      cb(err)
+    }
+  },
+  putUserEdit: async (req, cb) => {
+    try {
+      const body = req.body
+      const user = await User.findOne({ where: { id: req.user.id } })
+      if (!user) throw new Error('User not found!')
+      user.set({ ...body })
+      await user.save()
+      const userData = user.toJSON()
       cb(null, userData)
     } catch (err) {
       cb(err)

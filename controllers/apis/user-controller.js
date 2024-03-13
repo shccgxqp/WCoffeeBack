@@ -18,10 +18,19 @@ const userController = {
   },
   logout: (req, res, next) => {
     res.clearCookie('token', { httpOnly: true, domain: process.env.COOKIES_DOMAIN, path: '/' })
+    req.logout(err => {
+      if (err) return next(err)
+    })
     res.json({ status: 'success', message: 'Logged out successfully' })
   },
   checkLogin: (req, res, next) => {
     userServices.checkLogin(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  checkLoginFbGl: (req, res, next) => {
+    userServices.checkLoginFbGl(req, (err, data) => {
       if (err) return next(err)
       res.cookie('token', data.token, {
         maxAge: 60 * 60 * 24 * 1000,
@@ -32,6 +41,16 @@ const userController = {
   },
   getUser: (req, res, next) => {
     userServices.getUser(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  getUserEdit: (req, res, next) => {
+    userServices.getUserEdit(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  putUserEdit: (req, res, next) => {
+    userServices.putUserEdit(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })
     )
   },
