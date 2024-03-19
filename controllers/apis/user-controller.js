@@ -8,7 +8,7 @@ const userController = {
         maxAge: 60 * 60 * 24 * 1000,
         httpOnly: true,
       })
-      res.json({ status: 'success', data })
+      res.json({ status: 'success', message: '登入成功!', data })
     })
   },
   signUp: (req, res, next) => {

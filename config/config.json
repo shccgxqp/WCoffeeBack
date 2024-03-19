@@ -10,9 +10,10 @@
   "production": {
     "use_env_variable": "DATABASE_URL"
   },
-  "travis": {
-  "username": "travis",
-  "database": "wang_coffee",
+  "test": {
+  "username": "root",
+  "password": "password",
+  "database": "wangtest",
   "host": "127.0.0.1",
   "dialect": "mysql",
   "logging": false

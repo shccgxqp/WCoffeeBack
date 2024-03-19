@@ -38,9 +38,9 @@ const userServices = {
       } = req.body
 
       if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) throw new Error('1|請輸入正確的信箱格式!')
-      if (email < 6) throw new Error('2|密碼長度不足6位，請確認!')
-      if (password !== password_check) throw new Error('2|密碼輸入有誤，請確認!')
-      if (last_name === '') throw new Error('3|姓氏名字輸入有誤，請確認!')
+      if (password_check.length < 6) throw new Error('2|密碼長度不足6位，請確認!')
+      if (password !== password_check) throw new Error('2|密碼與確認密碼不符，請確認!')
+      if (last_name === '') throw new Error('3|姓氏輸入有誤，請確認!')
       if (first_name === '') throw new Error('4|名字輸入有誤，請確認!')
       if (!/^[0-9]+$/.test(phone) || phone.length !== 10)
         throw new Error('5|手機號碼輸入有誤，請確認!')
@@ -73,7 +73,7 @@ const userServices = {
       const data = user.toJSON()
       delete data.password
 
-      cb(null, { data: { message: '註冊成功!', user: data } })
+      cb(null, { message: '註冊成功!', user: data })
     } catch (err) {
       cb(err)
     }
@@ -183,7 +183,7 @@ const userServices = {
       const id = req.params.id
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
       if (!shipment) {
-        const error = new Error('找不到貨運資料!')
+        const error = new Error(`id = ${req.user.id} 找不到貨運資料!`)
         error.status = 401
         throw error
       }
@@ -229,18 +229,25 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const id = req.params.id
-      const { state, ...updateData } = req.body
+      const { state } = req.body
 
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
 
-      if (!shipment) throw new Error('找不到貨運資料!')
-
+      if (!shipment) {
+        const error = new Error('找不到貨運資料!')
+        error.status = 401
+        throw error
+      }
       if (state && state !== shipment.state) {
         const existingShipment = await Shipment.findOne({ where: { userId: reqUserId, state } })
-        if (existingShipment) throw new Error('貨運名稱已存在，請確認!')
+        if (existingShipment) {
+          const error = new Error('貨運名稱已存在，請確認!')
+          error.status = 401
+          throw error
+        }
       }
 
-      await shipment.update(updateData)
+      await shipment.update(req.body)
       cb(null, shipment.toJSON())
     } catch (error) {
       cb(error)
@@ -250,7 +257,6 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const id = req.params.id
-
       const orders = await Order.findAll({
         where: {
           userId: reqUserId,
@@ -258,10 +264,18 @@ const userServices = {
           status: { [db.Sequelize.Op.not]: 'completed' },
         },
       })
-      if (orders.length > 0) throw new Error('已有訂單，無法刪除!')
+      if (orders.length > 0) {
+        const error = new Error('已有訂單，無法刪除!')
+        error.status = 401
+        throw error
+      }
 
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
-      if (!shipment) throw new Error('找不到貨運資料!')
+      if (!shipment) {
+        const error = new Error('找不到貨運資料!')
+        error.status = 401
+        throw error
+      }
 
       await shipment.destroy()
 

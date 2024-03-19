@@ -13,8 +13,10 @@ module.exports = {
     if (err instanceof Error) {
       res.status(err.status || 500).json({
         status: 'error',
-        name: err.name,
-        message: err.message,
+        data: {
+          name: err.name,
+          message: err.message,
+        },
       })
     } else {
       res.status(500).json({
