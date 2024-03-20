@@ -30,7 +30,7 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 - [💡 API Reference - 格式規範](#-api-reference---格式規範)
 - [⛏️ Built Using - 主要使用  ](#️-built-using---主要使用--)
 - [⚙️ Installing - 專案安裝流程](#️-installing---專案安裝流程)
-- [🛠️ 更新計畫 - 未來將更新的資料](#️-更新計畫---未來將更新的資料)
+- [🛠️ 更新計畫 - 未來將更新的功能](#️-更新計畫---未來將更新的功能)
 
 ## 🎈 Initial - 專案介紹 <a name="initial"></a>
 
@@ -144,7 +144,7 @@ npm run dev
 
 現在，可以開啟任一瀏覽器瀏覽器輸入 http://localhost:3060 開始查看囉！
 
-## 🛠️ 更新計畫 - 未來將更新的資料
+## 🛠️ 更新計畫 - 未來將更新的功能
 * 串接第三方金流 Ex:藍新金流、綠界科技
 * 連結財政部電子發票API
 * 串接第三方物流

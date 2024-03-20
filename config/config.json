@@ -4,6 +4,7 @@
   "password": "password",
   "database": "wang_coffee",
   "host": "127.0.0.1",
+  "port":"30736",
   "dialect": "mysql",
   "logging": false
   },
@@ -15,14 +16,7 @@
   "password": "password",
   "database": "wang_coffee_test",
   "host": "127.0.0.1",
-  "dialect": "mysql",
-  "logging": false
-  },
-  "github": {
-  "username": "root",
-  "password": "password",
-  "database": "wang_coffee",
-  "host": "127.0.0.1",
+  "port":"30736",
   "dialect": "mysql",
   "logging": false
   }
