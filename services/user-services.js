@@ -375,7 +375,7 @@ const userServices = {
             shipmentId: req.body.shipment_id,
             sub_total: subTotal,
             total: (subTotal * tax).toFixed(1),
-            status: 'pending',
+            status: '未付款',
             comments: req.body.comments,
           },
           { transaction }

@@ -12,10 +12,12 @@ const passport = require('./config/passport')
 const { apis } = require('./routes')
 const port = process.env.PORT || 3060
 
+corsOptions = [process.env.CORS_ORIGIN, process.env.NEWEBPAY]
+
 app.use(express.json())
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: corsOptions,
     credentials: true,
   })
 )

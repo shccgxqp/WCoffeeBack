@@ -19,11 +19,11 @@ if (config.use_env_variable) {
     process.env.DB_USERNAME || config.username,
     process.env.DB_PASSWORD || config.password,
     {
-      username: process.env.DB_USERNAME || config.username,
-      password: process.env.DB_PASSWORD || config.password,
+      username: process.env.MYSQL_USERNAME || config.username,
+      password: process.env.MYSQL_PASSWORD || config.password,
       database: config.database,
-      host: process.env.DB_HOST || config.host,
-      port: config.port,
+      host: process.env.MYSQL_HOST || config.host,
+      port: process.env.MYSQL_PORT || config.port,
       dialect: config.dialect,
       logging: config.logging,
     }

@@ -21,5 +21,14 @@
     "terminal.ansiRed": "#E6193C",
     "terminal.ansiWhite": "#8CA68C",
     "terminal.ansiYellow": "#98981B"
-  }
+  },
+  "cSpell.ignoreWords": [
+    "HASHIV",
+    "HASHKEY",
+    "MERCHANTID",
+    "NOTIFYURL",
+    "PAYGATEWAY",
+    "RETURNURL",
+    "newebpay"
+  ]
 }
