@@ -16,10 +16,10 @@ app.use(express.json())
 corsOptions = [
   'http://localhost:3000',
   'http://localhost:3060',
-  'https://wcoffeeback.zeabur.app/',
-  'https://wcoffeefront.zeabur.app/',
-  'https://ccore.newebpay.com/',
-  'https://core.newebpay.com/',
+  'https://wcoffeeback.zeabur.app',
+  'https://wcoffeefront.zeabur.app',
+  'https://ccore.newebpay.com',
+  'https://core.newebpay.com',
 ]
 app.use(
   cors({
