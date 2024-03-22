@@ -10,11 +10,12 @@ const { MERCHANTID, VERSION, NOTIFYURL, RETURNURL, CORS_ORIGIN, PAYGATEWAY } = p
 const paymentServices = {
   newebpay_payment: async (req, cb) => {
     try {
-      const orderId = req.params.orderId
-      const order = await Order.findOne({ where: { id: parseInt(orderId) } })
+      const orderId = parseInt(req.params.orderId)
+      const order = await Order.findOne({ where: { id: orderId } })
       if (order.userId != req.user.id) throw new Error('此訂單不屬於您')
-
       const user = await User.findOne({ where: { id: order.userId } })
+      order.MerchantOrderNo = Date.now()
+
       const data = {
         MerchantID: MERCHANTID, // 商店代號
         RespondType: 'JSON', // 回傳格式
@@ -25,15 +26,14 @@ const paymentServices = {
         ItemDesc: 'ItemDesc 測試', // 訂單描述
         Email: user.email, // 付款人電子信箱
         ReturnURL: NOTIFYURL, // 支付完成返回商店網址
-        NotifyURL: NOTIFYURL, // 支付通知網址/每期授權結果通知
+        NotifyURL: RETURNURL, // 支付通知網址/每期授權結果通知
         ClientBackURL: `${CORS_ORIGIN}/store`, // 付款完成返回商店網址
         LoginType: 0, // 0=不須藍新會員登入
         OrderComment: 'OrderComment 測試測試', // 商店備註
       }
-      console.log(data)
+      order = await order.save()
       const TradeInfo = createSesEncrypt(data)
       const TradeSha = createShaEncrypt(TradeInfo)
-
       cb(null, {
         ...data,
         PayGateWay: PAYGATEWAY,
@@ -46,15 +46,28 @@ const paymentServices = {
   },
   newebpay_notify: async (req, cb) => {
     try {
-      console.log('藍新回傳資料 :', req.body)
-      console.log('藍新回傳資料info :', req.body.TradeInfo)
       const response = req.body
       const data = createSesDecrypt(response.TradeInfo)
-      console.log('藍新回傳資料 :', data)
       const shaEncrypt = createShaEncrypt(response.TradeInfo)
-      console.log('藍新SHA檢查碼 :', shaEncrypt)
+      if (!shaEncrypt === response.TradeSha) return res.end()
+      const order = await Order.findOne({ where: { MerchantOrderNo: data.MerchantOrderNo } })
+      if (data.Status === 'SUCCESS') {
+        order.payment_status = '已付款'
+        order.payment_type = data.PaymentType
+      } else if (data.Status === 'MPG03009') order.payment_status = '付款失敗'
+      else console.log('付款失敗：未知狀態', data.Status)
 
-      cb(null, data)
+      if (data.PaymentType === 'WEBATM') {
+        order.payment_bank = data.PayBankCode
+        order.payment_act = data.PayerAccount5Code
+      }
+      if (data.PaymentType === 'CREDIT') {
+        order.payment_bank = data.AuthBank
+        order.payment_act = data.Card6No + data.Card4No
+      }
+      await order.save()
+
+      cb(null, { data })
     } catch (err) {
       cb(err)
     }

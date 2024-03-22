@@ -8,6 +8,10 @@ const data = [
     total: 880,
     status: 'complete',
     comments: 'test',
+    payment_status: '付款完成',
+    payment_type: 'WEBATM',
+    payment_bank: '809',
+    payment_act: '12345',
   },
   {
     user_id: 1,
@@ -16,6 +20,10 @@ const data = [
     total: 990,
     status: 'pending',
     comments: 'test',
+    payment_status: '付款完成',
+    payment_type: 'CREDIT',
+    payment_bank: 'Taishin',
+    payment_act: '4000111111',
   },
   {
     user_id: 2,
@@ -24,6 +32,10 @@ const data = [
     total: 2200,
     status: 'pending',
     comments: 'test',
+    payment_status: '付款完成',
+    payment_type: 'WEBATM',
+    payment_bank: '809',
+    payment_act: '12345',
   },
   {
     user_id: 3,
@@ -32,6 +44,10 @@ const data = [
     total: 440,
     status: 'pending',
     comments: 'test',
+    payment_status: '付款完成',
+    payment_type: 'WEBATM',
+    payment_bank: '809',
+    payment_act: '12345',
   },
 ]
 

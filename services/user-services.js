@@ -294,7 +294,19 @@ const userServices = {
 
       const orders = await Order.findAll({
         where: { userId: reqUserId },
-        attributes: ['id', 'sub_total', 'total', 'status', 'comments', 'updated_at', 'created_at'],
+        attributes: [
+          'id',
+          'sub_total',
+          'total',
+          'status',
+          'comments',
+          'payment_status',
+          'payment_type',
+          'payment_bank',
+          'payment_act',
+          'updated_at',
+          'created_at',
+        ],
         include: [
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
           {
@@ -322,7 +334,19 @@ const userServices = {
       const id = req.params.id
       const orders = await Order.findAll({
         where: { userId: reqUserId, id },
-        attributes: ['id', 'sub_total', 'total', 'status', 'comments', 'updated_at', 'created_at'],
+        attributes: [
+          'id',
+          'sub_total',
+          'total',
+          'status',
+          'comments',
+          'payment_status',
+          'payment_type',
+          'payment_bank',
+          'payment_act',
+          'updated_at',
+          'created_at',
+        ],
         include: [
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
           {
@@ -375,8 +399,9 @@ const userServices = {
             shipmentId: req.body.shipment_id,
             sub_total: subTotal,
             total: (subTotal * tax).toFixed(1),
-            status: '未付款',
+            status: 'pending',
             comments: req.body.comments,
+            payment_status: '未付款',
           },
           { transaction }
         )

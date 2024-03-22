@@ -24,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
       status: DataTypes.STRING,
       comments: DataTypes.STRING,
       cancel: DataTypes.DATE,
+      payment_status: DataTypes.STRING,
+      payment_type: DataTypes.STRING,
+      payment_bank: DataTypes.STRING,
+      payment_act: DataTypes.STRING,
+      MerchantOrderNo: DataTypes.STRING,
     },
     {
       sequelize,

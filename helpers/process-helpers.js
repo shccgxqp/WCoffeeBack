@@ -11,6 +11,10 @@ const processHelpers = {
         total: order.total,
         status: order.status,
         comments: order.comments,
+        payment_status: order.payment_status,
+        payment_type: order.payment_type,
+        payment_bank: order.payment_bank,
+        payment_act: order.payment_act,
         created_at: order.created_at,
         updated_at: order.updated_at,
         Shipment: [
