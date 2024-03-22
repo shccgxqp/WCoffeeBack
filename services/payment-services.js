@@ -24,7 +24,7 @@ const paymentServices = {
         Amt: parseInt(order.total), // 訂單金額
         ItemDesc: 'ItemDesc 測試', // 訂單描述
         Email: user.email, // 付款人電子信箱
-        ReturnURL: RETURNURL, // 支付完成返回商店網址
+        ReturnURL: NOTIFYURL, // 支付完成返回商店網址
         NotifyURL: NOTIFYURL, // 支付通知網址/每期授權結果通知
         ClientBackURL: `${CORS_ORIGIN}/store`, // 付款完成返回商店網址
         LoginType: 0, // 0=不須藍新會員登入
@@ -35,12 +35,9 @@ const paymentServices = {
       const TradeSha = createShaEncrypt(TradeInfo)
 
       cb(null, {
-        MerchantID: MERCHANTID,
+        ...data,
         TradeInfo,
         TradeSha,
-        Version: VERSION,
-        PayGateWay: PAYGATEWAY,
-        MerchantOrderNo: Date.now(),
       })
     } catch (err) {
       cb(err)
@@ -48,7 +45,8 @@ const paymentServices = {
   },
   newebpay_notify: async (req, cb) => {
     try {
-      console.log(req.body)
+      console.log('藍新回傳資料 :', req.body)
+      console.log('藍新回傳資料info :', req.body.TradeInfo)
       const response = req.body
       const data = createSesDecrypt(response.TradeInfo)
       console.log('藍新回傳資料 :', data)
