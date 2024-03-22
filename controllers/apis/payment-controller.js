@@ -7,9 +7,7 @@ const paymentController = {
     )
   },
   newebpay_notify: (req, res, next) => {
-    paymentServices.newebpay_notify(req, (err, data) =>
-      err ? next(err) : res.json({ status: 'success', data })
-    )
+    paymentServices.newebpay_notify(req, (err, data) => (err ? next(err) : res.end()))
   },
 }
 
