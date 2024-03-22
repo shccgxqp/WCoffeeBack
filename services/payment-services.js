@@ -36,6 +36,7 @@ const paymentServices = {
 
       cb(null, {
         ...data,
+        PayGateWay: PAYGATEWAY,
         TradeInfo,
         TradeSha,
       })
