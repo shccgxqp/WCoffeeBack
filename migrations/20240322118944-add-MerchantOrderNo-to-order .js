@@ -4,13 +4,13 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await Promise.all([
-      queryInterface.addColumn('Orders', 'MerchantOrderNo', {
+      queryInterface.addColumn('Orders', 'merchant_order_no', {
         type: Sequelize.STRING,
       }),
     ])
   },
 
   async down(queryInterface, Sequelize) {
-    await Promise.all([queryInterface.removeColumn('Orders', 'MerchantOrderNo')])
+    await Promise.all([queryInterface.removeColumn('Orders', 'merchant_order_no')])
   },
 }

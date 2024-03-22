@@ -14,7 +14,7 @@ const paymentServices = {
       const order = await Order.findOne({ where: { id: orderId } })
       if (order.userId != req.user.id) throw new Error('此訂單不屬於您')
       const user = await User.findOne({ where: { id: order.userId } })
-      order.MerchantOrderNo = Date.now()
+      order.merchant_order_no = Date.now()
 
       const data = {
         MerchantID: MERCHANTID, // 商店代號
@@ -25,13 +25,14 @@ const paymentServices = {
         Amt: parseInt(order.total), // 訂單金額
         ItemDesc: 'ItemDesc 測試', // 訂單描述
         Email: user.email, // 付款人電子信箱
-        ReturnURL: NOTIFYURL, // 支付完成返回商店網址
-        NotifyURL: RETURNURL, // 支付通知網址/每期授權結果通知
-        ClientBackURL: `${CORS_ORIGIN}/store`, // 付款完成返回商店網址
+        ReturnURL: `${CORS_ORIGIN}/user/order/details/${orderId}`, // 支付完成返回商店網址
+        NotifyURL: NOTIFYURL, // 支付通知網址/每期授權結果通知
+        ClientBackURL: `${CORS_ORIGIN}/user/order/details/${orderId}`, //暫時返回商店網址
         LoginType: 0, // 0=不須藍新會員登入
         OrderComment: 'OrderComment 測試測試', // 商店備註
       }
-      order = await order.save()
+      await order.save()
+      console.log('更新資料 :', order.merchant_order_no)
       const TradeInfo = createSesEncrypt(data)
       const TradeSha = createShaEncrypt(TradeInfo)
       cb(null, {
@@ -46,24 +47,31 @@ const paymentServices = {
   },
   newebpay_notify: async (req, cb) => {
     try {
+      // const from = req.params.from
+      // if (from === 'ReturnURL')
+      //   return res.redirect('https://wcoffeefront.zeabur.app/user/order/result')
       const response = req.body
       const data = createSesDecrypt(response.TradeInfo)
       const shaEncrypt = createShaEncrypt(response.TradeInfo)
       if (!shaEncrypt === response.TradeSha) return res.end()
-      const order = await Order.findOne({ where: { MerchantOrderNo: data.MerchantOrderNo } })
+      console.log('callback data:', data)
+      console.log('callback :', data.Result.MerchantOrderNo)
+      const order = await Order.findOne({
+        where: { merchant_order_no: data.Result.MerchantOrderNo },
+      })
       if (data.Status === 'SUCCESS') {
         order.payment_status = '已付款'
-        order.payment_type = data.PaymentType
+        order.payment_type = data.Result.PaymentType
       } else if (data.Status === 'MPG03009') order.payment_status = '付款失敗'
       else console.log('付款失敗：未知狀態', data.Status)
 
       if (data.PaymentType === 'WEBATM') {
-        order.payment_bank = data.PayBankCode
-        order.payment_act = data.PayerAccount5Code
+        order.payment_bank = data.Result.PayBankCode
+        order.payment_act = data.Result.PayerAccount5Code
       }
       if (data.PaymentType === 'CREDIT') {
-        order.payment_bank = data.AuthBank
-        order.payment_act = data.Card6No + data.Card4No
+        order.payment_bank = data.Result.AuthBank
+        order.payment_act = data.Result.Card6No + data.Result.Card4No
       }
       await order.save()
 
