@@ -8,32 +8,39 @@ const productServices = {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 8
       const Category_id = parseInt(req.query.categoryId) || 3
+      let message = '沒有找到商品'
 
-      const totalCount = await Product.count({ where: { Category_id } })
-      const data = await Product.findAll({
+      const totalCount = await Product.count({
         where: { Category_id },
-        include: [
-          { model: Category, attributes: ['name'] },
-          { model: Origin, attributes: ['name'] },
-          { model: Unit, attributes: ['name'] },
-        ],
         limit,
         offset: (page - 1) * limit,
-        raw: true,
       })
-      if (data.length === 0) {
-        const error = new Error('沒有找到商品')
-        error.status = 401
-        throw error
+
+      if (totalCount === 0) cb(null, { message, totalCount, products: [] })
+      else {
+        const data = await Product.findAll({
+          where: { Category_id },
+          include: [
+            { model: Category, attributes: ['name'] },
+            { model: Origin, attributes: ['name'] },
+            { model: Unit, attributes: ['name'] },
+          ],
+          limit,
+          offset: (page - 1) * limit,
+          raw: true,
+        })
+
+        message = `搜尋成功，找到${data.length}項商品！`
+        const products = processProducts(data)
+        cb(null, { message, totalCount, products })
       }
-      const products = processProducts(data)
-      cb(null, { totalCount, products })
     } catch (err) {
       cb(err, null)
     }
   },
   getProductById: async (req, cb) => {
     try {
+      let message = '搜尋失敗！'
       const data = await Product.findByPk(req.params.id, {
         include: [
           { model: Category, attributes: ['name'] },
@@ -42,10 +49,12 @@ const productServices = {
         ],
         raw: true,
       })
-
-      const product = processProducts([data])
-
-      cb(null, product)
+      if (data.length === 0) cb(null, { message, product: [] })
+      else {
+        const product = processProducts([data])[0]
+        message = '搜尋成功！'
+        cb(null, { message, product })
+      }
     } catch (err) {
       cb(err, null)
     }

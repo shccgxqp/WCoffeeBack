@@ -290,40 +290,45 @@ const userServices = {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 2
 
+      let message = '沒有查詢到訂單'
+
       const totalCount = await Order.count({ where: { userId: reqUserId } })
 
-      const orders = await Order.findAll({
-        where: { userId: reqUserId },
-        attributes: [
-          'id',
-          'sub_total',
-          'total',
-          'status',
-          'comments',
-          'payment_status',
-          'payment_type',
-          'payment_bank',
-          'payment_act',
-          'updated_at',
-          'created_at',
-        ],
-        include: [
-          { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
-          {
-            model: Product,
-            as: 'OrderItemsProduct',
-            attributes: ['name', 'price', 'weight', 'roast', 'image'],
-            through: { attributes: ['qty'] },
-          },
-        ],
-        limit,
-        offset: (page - 1) * limit,
-        raw: true,
-      })
-
-      const data = processOrders(orders)
-
-      cb(null, { orders: data, totalCount })
+      if (totalCount === 0) cb(null, { message, totalCount, orders: data })
+      else {
+        message = '查詢成功！'
+        const orders = await Order.findAll({
+          where: { userId: reqUserId },
+          attributes: [
+            'id',
+            'sub_total',
+            'total',
+            'status',
+            'comments',
+            'payment_status',
+            'payment_type',
+            'payment_bank',
+            'payment_act',
+            'updated_at',
+            'created_at',
+          ],
+          include: [
+            { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
+            {
+              model: Product,
+              as: 'OrderItemsProduct',
+              attributes: ['name', 'price', 'weight', 'roast', 'image'],
+              through: { attributes: ['qty'] },
+            },
+          ],
+          order: [['created_at', 'DESC']],
+          limit,
+          offset: (page - 1) * limit,
+          raw: true,
+        })
+        const data = processOrders(orders)
+        cb(null, { message, totalCount, orders: data })
+      }
     } catch (error) {
       cb(error)
     }
@@ -332,6 +337,7 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const id = req.params.id
+      let message = '沒有查詢到訂單'
       const orders = await Order.findAll({
         where: { userId: reqUserId, id },
         attributes: [
@@ -360,11 +366,12 @@ const userServices = {
         ],
         raw: true,
       })
-
-      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
-      const data = processOrders(orders)
-
-      cb(null, data)
+      if (orders.length === 0) cb(null, { message, orders: data })
+      else {
+        message = '查詢成功！'
+        const data = processOrders(orders)[0]
+        cb(null, { message, order: data })
+      }
     } catch (error) {
       cb(error)
     }

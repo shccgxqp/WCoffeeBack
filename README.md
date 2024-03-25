@@ -31,6 +31,7 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 - [⛏️ Built Using - 主要使用  ](#️-built-using---主要使用--)
 - [⚙️ Installing - 專案安裝流程](#️-installing---專案安裝流程)
 - [🛠️ 更新計畫 - 未來將更新的功能](#️-更新計畫---未來將更新的功能)
+- [📝 網站開發紀錄](#-網站開發紀錄)
 
 ## 🎈 Initial - 專案介紹 <a name="initial"></a>
 
@@ -56,6 +57,7 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
   * 消費者 CRUD - 商品瀏覽、加入購物車、創建訂單、結帳付款、訂單瀏覽
   * 管理員 CRUD - 商品管理、商品分類管理、訂單管理、用戶權限管理
   * 整合 mocha / chai / supertest 完成單元測試
+  * 透過 藍新科技 串接API，實作線上刷卡
   * 透過 passport 實作google、facebook第三方登入
   * 透過 cors 實作前後端分離跨域
   * 採用 JWT & cookies httpOnly 實作跨域認證
@@ -104,7 +106,7 @@ npm install
 4. 環境變數設定
 
 ```
-JWT_SECRET=
+JWT_SECRET= 
 CORS_ORIGIN= 前端網址
 FACEBOOK_CLIENT_ID= FB金鑰ID
 FACEBOOK_CLIENT_SECRET= FB金鑰密碼
@@ -112,6 +114,13 @@ FACEBOOK_CALLBACK_URL=  FB金鑰回傳網址
 GOOGLE_CLIENT_ID= GL金鑰ID
 GOOGLE_CLIENT_SECRET= GL金鑰密碼
 GOOGLE_CALLBACK_URL= GL金鑰回傳網址
+MERCHANTID= 藍新金流商店代號
+HASHKEY= 藍新金流Hashkey
+HASHIV= 藍新金流Hashiv
+VERSION=2.0
+RETURNURL= 購買成功使用者端網址
+NOTIFYURL= 購買成功伺服器端網址
+PayGateWay= https://ccore.newebpay.com/MPG/mpg_gateway
 ```
 
 1. 資料庫設定、建立種子檔案
@@ -145,8 +154,12 @@ npm run dev
 現在，可以開啟任一瀏覽器瀏覽器輸入 http://localhost:3060 開始查看囉！
 
 ## 🛠️ 更新計畫 - 未來將更新的功能
-* 串接第三方金流 Ex:藍新金流、綠界科技
 * 連結財政部電子發票API
 * 串接第三方物流
 * 透過數據分析，智能推薦喜愛的風味與烘培度
 * 定期E-MAIL自動關心客戶，提高客戶對品牌的連結
+
+## 📝 網站開發紀錄
+
+更多的開方中記錄，請點擊查看。
+- [Notion](https://wang-yuan-chen.notion.site/Wang-Coffee-4030507d9b35426a9c9cbfd34f91c6ce?pvs=4) - 主要放設計時紀錄的每日任務以及實作功能時繪製的流程圖。
