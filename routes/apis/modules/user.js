@@ -9,7 +9,7 @@ router.get('/logout', userController.logout)
 router.get('/checkLogin', authenticated, userController.checkLogin)
 
 router.get('/edit', authenticated, userController.getUserEdit)
-router.put('/edit', authenticated, userController.putUserEdit)
+router.put('/edit', upload.single('image'), authenticated, userController.putUserEdit)
 
 router.get('/orders/:id', authenticated, userController.getOrderById)
 router.get('/orders', authenticated, userController.getOrder)

@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken')
 
 const db = require('../models')
 const { User, Order, OrderItem, Product, Shipment } = db
-const { processOrders } = require('../helpers/process-helpers')
+const { processOrderHandler } = require('../helpers/process-helpers')
+const { errorHandler } = require('../helpers/error-helpers')
 
 const userServices = {
   signIn: async (req, cb) => {
@@ -36,23 +37,25 @@ const userServices = {
         country,
         city,
       } = req.body
+      // throw error
 
-      if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) throw new Error('1|請輸入正確的信箱格式!')
-      if (password_check.length < 6) throw new Error('2|密碼長度不足6位，請確認!')
-      if (password !== password_check) throw new Error('2|密碼與確認密碼不符，請確認!')
-      if (last_name === '') throw new Error('3|姓氏輸入有誤，請確認!')
-      if (first_name === '') throw new Error('4|名字輸入有誤，請確認!')
+      if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email))
+        throw errorHandler('1|請輸入正確的信箱格式!', 401)
+      if (password_check.length < 6) throw errorHandler('2|密碼長度不足6位，請確認!', 401)
+      if (password !== password_check) throw errorHandler('2|密碼與確認密碼不符，請確認!', 401)
+      if (last_name === '') throw errorHandler('3|姓氏輸入有誤，請確認!', 401)
+      if (first_name === '') throw errorHandler('4|名字輸入有誤，請確認!', 401)
       if (!/^[0-9]+$/.test(phone) || phone.length !== 10)
-        throw new Error('5|手機號碼輸入有誤，請確認!')
-      if (country === '') throw new Error('6|國家輸入有誤，請確認!')
+        throw errorHandler('5|手機號碼輸入有誤，請確認!', 401)
+      if (country === '') throw errorHandler('6|國家輸入有誤，請確認!', 401)
       if (
         !/^\d{4}-\d{2}-\d{2}$/.test(birthday) ||
         birthday >= new Date().toISOString().split('T')[0]
       )
-        throw new Error('7|生日輸入有誤，請確認!')
+        throw errorHandler('7|生日輸入有誤，請確認!', 401)
 
       const existingUser = await User.findOne({ where: { email: req.body.email } })
-      if (existingUser) throw new Error('信箱已被註冊!')
+      if (existingUser) throw errorHandler('信箱已被註冊!', 401)
 
       const hash = await bcrypt.hash(req.body.password, 10)
       const userData = {
@@ -119,7 +122,7 @@ const userServices = {
           },
         ],
       })
-      if (!user) throw new Error('User not found!')
+      if (!user) throw errorHandler('沒有找到使用者', 401)
       const userData = user.toJSON()
       delete userData.password
       cb(null, userData)
@@ -150,11 +153,31 @@ const userServices = {
   },
   putUserEdit: async (req, cb) => {
     try {
-      const body = req.body
+      const { last_name, first_name, phone, birthday, country, city, carrier_code } = req.body
+
+      if (last_name === '') throw errorHandler('姓氏輸入有誤，請確認!', 401)
+      if (first_name === '') throw errorHandler('名字輸入有誤，請確認!', 401)
+      if (!/^[0-9]+$/.test(phone) || phone.length !== 10)
+        throw errorHandler('手機號碼輸入有誤，請確認!', 401)
+      if (country === '') throw errorHandler('國家輸入有誤，請確認!', 401)
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(birthday) ||
+        birthday >= new Date().toISOString().split('T')[0]
+      )
+        throw errorHandler('生日輸入有誤，請確認!', 401)
+
       const user = await User.findOne({ where: { id: req.user.id } })
-      if (!user) throw new Error('User not found!')
-      user.set({ ...body })
+      if (!user) throw errorHandler('沒有找到使用者', 401)
+
+      user.last_name = last_name
+      user.first_name = first_name
+      user.phone = phone
+      user.birthday = birthday
+      user.country = country
+      user.city = city
+      user.carrier_code = carrier_code
       await user.save()
+
       const userData = user.toJSON()
       cb(null, userData)
     } catch (err) {
@@ -165,12 +188,7 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const shipments = await Shipment.findAll({ where: { userId: reqUserId } })
-      if (!shipments || shipments.length === 0) {
-        const error = new Error('請建立配送資料!')
-        error.status = 401
-        throw error
-      }
-
+      if (!shipments || shipments.length === 0) throw errorHandler('請建立配送資料!', 401)
       const shipmentData = shipments.map(shipment => shipment.toJSON())
       cb(null, shipmentData)
     } catch (err) {
@@ -182,11 +200,7 @@ const userServices = {
       const reqUserId = req.user.id
       const id = req.params.id
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
-      if (!shipment) {
-        const error = new Error(`id = ${req.user.id} 找不到貨運資料!`)
-        error.status = 401
-        throw error
-      }
+      if (!shipment) throw errorHandler(`id = ${req.user.id} 找不到貨運資料!`, 401)
       const shipmentData = shipment.toJSON()
       cb(null, shipmentData)
     } catch (err) {
@@ -198,18 +212,11 @@ const userServices = {
       const reqUserId = req.user.id
       const { address, city, country, state, zip_code } = req.body
       console.log(address, city, country, state, zip_code)
-      if (!address || !city || !country || !state || !zip_code) {
-        const error = new Error('請填寫所有必要的地址資料!')
-        error.status = 401
-        throw error
-      }
+      if (!address || !city || !country || !state || !zip_code)
+        throw errorHandler('請填寫所有必要的地址資料!', 401)
 
       const existingShipment = await Shipment.findOne({ where: { userId: reqUserId, state } })
-      if (existingShipment) {
-        const error = new Error('配送名稱已存在，請確認!')
-        error.status = 401
-        throw error
-      }
+      if (existingShipment) throw errorHandler('配送名稱已存在，請確認!', 401)
 
       const shipment = await Shipment.create({
         address,
@@ -229,25 +236,22 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const id = req.params.id
-      const { state } = req.body
+      const { address, city, country, state, zip_code } = req.body
 
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
 
-      if (!shipment) {
-        const error = new Error('找不到貨運資料!')
-        error.status = 401
-        throw error
-      }
+      if (!shipment) throw errorHandler('找不到貨運資料!', 401)
       if (state && state !== shipment.state) {
         const existingShipment = await Shipment.findOne({ where: { userId: reqUserId, state } })
-        if (existingShipment) {
-          const error = new Error('貨運名稱已存在，請確認!')
-          error.status = 401
-          throw error
-        }
+        if (existingShipment) throw errorHandler('貨運名稱已存在，請確認!', 401)
       }
+      shipment.address = address
+      shipment.city = city
+      shipment.country = country
+      shipment.state = state
+      shipment.zip_code = zip_code
+      shipment.save()
 
-      await shipment.update(req.body)
       cb(null, shipment.toJSON())
     } catch (error) {
       cb(error)
@@ -264,19 +268,10 @@ const userServices = {
           status: { [db.Sequelize.Op.not]: 'completed' },
         },
       })
-      if (orders.length > 0) {
-        const error = new Error('已有訂單，無法刪除!')
-        error.status = 401
-        throw error
-      }
+      if (orders.length > 0) throw errorHandler('已有訂單，無法刪除!', 401)
 
       const shipment = await Shipment.findOne({ where: { userId: reqUserId, id } })
-      if (!shipment) {
-        const error = new Error('找不到貨運資料!')
-        error.status = 401
-        throw error
-      }
-
+      if (!shipment) throw errorHandler('找不到貨運資料!', 401)
       await shipment.destroy()
 
       cb(null, shipment.toJSON())
@@ -288,7 +283,7 @@ const userServices = {
     try {
       const reqUserId = req.user.id
       const page = parseInt(req.query.page) || 1
-      const limit = parseInt(req.query.limit) || 2
+      const limit = parseInt(req.query.limit) || 8
 
       let message = '沒有查詢到訂單'
 
@@ -326,7 +321,7 @@ const userServices = {
           offset: (page - 1) * limit,
           raw: true,
         })
-        const data = processOrders(orders)
+        const data = processOrderHandler(orders)
         cb(null, { message, totalCount, orders: data })
       }
     } catch (error) {
@@ -366,10 +361,10 @@ const userServices = {
         ],
         raw: true,
       })
-      if (orders.length === 0) cb(null, { message, orders: data })
+      if (orders.length === 0) cb(null, { message, orders: {} })
       else {
         message = '查詢成功！'
-        const data = processOrders(orders)[0]
+        const data = processOrderHandler(orders)[0]
         cb(null, { message, order: data })
       }
     } catch (error) {
@@ -387,9 +382,7 @@ const userServices = {
           where: { id: product.id },
           attributes: ['id', 'name', 'image', 'price'],
         })
-        if (!item) {
-          throw new Error(`商品ID: ${product.id}， 不存在!`)
-        }
+        if (!item) throw errorHandler(`商品ID: ${product.id}， 不存在!`, 401)
         return { item, qty: product.qty }
       })
       const queriedProducts = await Promise.all(productQueries)
@@ -441,8 +434,7 @@ const userServices = {
       const id = req.params.id
 
       const order = await Order.findOne({ where: { userId: reqUserId, id } })
-      if (!order) throw new Error('找不到訂單')
-
+      if (!order) throw errorHandler('找不到訂單', 401)
       const updatedOrder = await order.update({ cancel: new Date() })
       cb(null, updatedOrder)
     } catch (error) {

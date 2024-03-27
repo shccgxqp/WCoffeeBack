@@ -23,13 +23,12 @@ passport.use(
       ;(async () => {
         try {
           const user = await User.findOne({ where: { email } })
-          if (!user) {
-            throw new Error('信箱或密碼錯誤，請重新輸入！')
-          }
+          const error = new Error('信箱或密碼錯誤，請重新輸入！')
+          error.status = 401
+          if (!user) throw error
           const res = await bcrypt.compare(password, user.password)
-          if (!res) {
-            throw new Error('信箱或密碼錯誤，請重新輸入！')
-          }
+          if (!res) throw error
+
           return cb(null, user)
         } catch (err) {
           return cb(err)
@@ -109,10 +108,10 @@ const extractTokenFromCookie = req => {
 
 const jwtOptions = {
   jwtFromRequest: ExtractJWT.fromExtractors([
+    extractTokenFromCookie,
     ExtractJWT.fromAuthHeaderAsBearerToken(),
     ExtractJWT.fromHeader('token'),
     ExtractJWT.fromUrlQueryParameter('token'),
-    extractTokenFromCookie,
   ]),
   secretOrKey: process.env.JWT_SECRET,
 }

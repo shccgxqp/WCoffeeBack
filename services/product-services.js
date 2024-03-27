@@ -1,6 +1,6 @@
 const db = require('../models')
 const { Product, Category, Origin, Unit } = db
-const { processOrders, processProducts } = require('../helpers/process-helpers')
+const { processProductsHandler } = require('../helpers/process-helpers')
 
 const productServices = {
   getProducts: async (req, cb) => {
@@ -31,7 +31,7 @@ const productServices = {
         })
 
         message = `搜尋成功，找到${data.length}項商品！`
-        const products = processProducts(data)
+        const products = processProductsHandler(data)
         cb(null, { message, totalCount, products })
       }
     } catch (err) {
@@ -49,9 +49,9 @@ const productServices = {
         ],
         raw: true,
       })
-      if (data.length === 0) cb(null, { message, product: [] })
+      if (!data) cb(null, { message, product: [] })
       else {
-        const product = processProducts([data])[0]
+        const product = processProductsHandler([data])[0]
         message = '搜尋成功！'
         cb(null, { message, product })
       }

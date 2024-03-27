@@ -1,5 +1,5 @@
 const processHelpers = {
-  processOrders(orders) {
+  processOrderHandler(orders) {
     const data = []
     const indexMap = new Map()
 
@@ -51,7 +51,7 @@ const processHelpers = {
 
     return data
   },
-  processProducts(products) {
+  processProductsHandler(products) {
     const data = products.map(product => ({
       id: product.id,
       name: product.name,
