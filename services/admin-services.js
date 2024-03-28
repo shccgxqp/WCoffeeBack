@@ -1,14 +1,15 @@
 const { Order, User, Product, Category, Origin, Unit, OrderItem, Shipment } = require('../models')
 const { localFileHandler } = require('../helpers/file-helpers')
 const db = require('../models')
-const { processOrders, processProducts } = require('../helpers/process-helpers')
+const { processOrderHandler, processProductsHandler } = require('../helpers/process-helpers')
+const { errorHandler } = require('../helpers/error-helpers')
 const adminServices = {
   getOrders: async (req, cb) => {
     try {
       const orders = await Order.findAll({
         attributes: ['id', 'sub_total', 'total', 'status', 'comments'],
         include: [
-          { model: User, attributes: ['name', 'email'] },
+          { model: User, attributes: ['last_name', 'first_name', 'email'] },
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
           {
             model: Product,
@@ -20,7 +21,7 @@ const adminServices = {
         raw: true,
       })
 
-      const data = processOrders(orders)
+      const data = processOrderHandler(orders)
 
       cb(null, data)
     } catch (error) {
@@ -34,7 +35,7 @@ const adminServices = {
         where: { id },
         attributes: ['id', 'sub_total', 'total', 'status', 'comments'],
         include: [
-          { model: User, attributes: ['name', 'email'] },
+          { model: User, attributes: ['last_name', 'first_name', 'email'] },
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
           {
             model: Product,
@@ -48,8 +49,8 @@ const adminServices = {
         raw: true,
       })
 
-      if (orders.length === 0) throw new Error('找不到訂單，請在確認一次喔！')
-      const data = processOrders(orders)
+      if (orders.length === 0) throw errorHandler(`查無此訂單編號 ${id}`, 401)
+      const data = processOrderHandler(orders)
 
       cb(null, data)
     } catch (error) {
@@ -58,8 +59,57 @@ const adminServices = {
   },
   patchOrderById: async (req, cb) => {
     try {
-      const data = await Order.update(req.body, { where: { id: req.params.id } })
-      cb(null, data)
+      const { status, comments, shipment_id, products, user_id } = req.body
+      const transaction = await db.sequelize.transaction()
+      try {
+        const order = await Order.findByPk(req.params.id, { transaction })
+        if (!order) throw errorHandler(`訂單編號: ${req.params.id} 不存在！`, 401)
+        const productQueries = products.map(async product => {
+          const item = await Product.findOne({
+            where: { id: product.id },
+            attributes: ['id', 'name', 'image', 'price'],
+          })
+          if (!item) throw errorHandler(`商品ID: ${product.id}， 不存在!`, 401)
+          return { item, qty: product.qty }
+        })
+        const queriedProducts = await Promise.all(productQueries)
+
+        const subTotal = queriedProducts.reduce((total, product) => {
+          return total + product.item.price * product.qty
+        }, 0)
+
+        await OrderItem.destroy({ where: { orderId: req.params.id }, transaction })
+        const orderItemPromises = products.map(product => {
+          return OrderItem.create(
+            {
+              orderId: order.id,
+              productId: product.id,
+              qty: product.qty,
+            },
+            { transaction }
+          )
+        })
+        await Promise.all(orderItemPromises)
+
+        const data = await Order.update(
+          {
+            user_id: user_id,
+            shipment_id: shipment_id,
+            sub_total: subTotal,
+            total: (subTotal * 1.1).toFixed(1),
+            comments: comments,
+            status: status,
+            payment_status: req.body.payment_status || '未付款',
+          },
+          { where: { id: req.params.id } },
+          { transaction }
+        )
+        await transaction.commit()
+        cb(null, { message: '更新成功！' })
+      } catch (error) {
+        await transaction.rollback()
+        throw errorHandler('更新失敗', 401)
+      }
     } catch (error) {
       cb(error)
     }
@@ -76,7 +126,7 @@ const adminServices = {
         await transaction.commit()
         cb(null, `已刪除訂單編號: ${id}`)
       } else {
-        throw new Error(`訂單編號: ${id} 查詢失敗。`)
+        throw errorHandler(`訂單編號: ${id} 查詢失敗。`, 1)
       }
     } catch (error) {
       cb(error)
@@ -98,7 +148,9 @@ const adminServices = {
       const limit = parseInt(req.query.limit)
         ? Math.min(Math.max(parseInt(req.query.limit), 8), 24)
         : 8
+      const Category_id = parseInt(req.query.categoryId) || 3
       const data = await Product.findAll({
+        where: { Category_id },
         include: [
           { model: Category, attributes: ['name'] },
           { model: Origin, attributes: ['name'] },
@@ -107,9 +159,9 @@ const adminServices = {
         offset: (page - 1) * limit,
         raw: true,
       })
-      if (data.length === 0) throw new Error('沒有找到商品')
+      if (data.length === 0) throw errorHandler('沒有找到商品', 401)
 
-      const products = processProducts(data)
+      const products = processProductsHandler(data)
 
       cb(null, products)
     } catch (error) {
@@ -127,7 +179,7 @@ const adminServices = {
         raw: true,
       })
 
-      const product = processProducts([data])
+      const product = processProductsHandler([data])
 
       cb(null, product)
     } catch (error) {
@@ -138,7 +190,7 @@ const adminServices = {
     try {
       const { name, price, weight, roast, description, category_id, origin_id, unit_id } = req.body
       if (!name || !price || !weight || !description || !category_id || !origin_id || !unit_id)
-        throw new Error('欄位不得為空')
+        throw errorHandler('欄位不得為空', 401)
       const { file } = req
       const filePath = await localFileHandler(file)
       const data = await Product.create({
@@ -177,7 +229,7 @@ const adminServices = {
         { where: { id: req.params.id } }
       )
       if (data[0] === 1) cb(null, '修改成功')
-      else cb(new Error('修改失敗'))
+      else throw errorHandler('修改失敗', 401)
     } catch (error) {
       cb(error)
     }
@@ -186,14 +238,14 @@ const adminServices = {
     try {
       const data = await Product.destroy({ where: { id: req.params.id } })
       if (data === 1) cb(null, '刪除成功')
-      else cb(new Error('刪除失敗'))
+      else throw errorHandler('刪除失敗', 401)
     } catch (error) {
       cb(error)
     }
   },
   getUsers: async (req, cb) => {
     try {
-      const data = await User.findOne({ where: { id: req.user.id } })
+      const data = await User.findAll()
       cb(null, data)
     } catch (error) {
       cb(error)
@@ -209,8 +261,8 @@ const adminServices = {
   },
   patchUser: async (req, cb) => {
     try {
-      const data = await User.update(req.body, { where: { id: req.user.id } })
-      cb(null, data)
+      await User.update(req.body, { where: { id: req.params.id } })
+      cb(null, { message: '修改成功' })
     } catch (error) {
       cb(error)
     }

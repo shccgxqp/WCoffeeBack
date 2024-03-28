@@ -52,7 +52,7 @@ const adminController = {
     )
   },
   getUsers: (req, res, next) => {
-    adminServices.getUser(req, (err, data) =>
+    adminServices.getUsers(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })
     )
   },

@@ -37,7 +37,8 @@ const processHelpers = {
           },
         ],
       }
-      if (order['User.name']) orderData['UserName'] = order['User.name']
+      if (order['User.last_name']) orderData['LastName'] = order['User.last_name']
+      if (order['User.first_name']) orderData['FirstName'] = order['User.first_name']
       if (order['User.email']) orderData['UserEmail'] = order['User.email']
 
       if (indexMap.has(orderId)) {

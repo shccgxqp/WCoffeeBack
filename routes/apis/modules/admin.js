@@ -18,6 +18,6 @@ router.delete('/orders/:id', adminController.deleteOrderById)
 
 router.get('/users', adminController.getUsers)
 router.get('/users/:id', adminController.getUserById)
-router.patch('/users/:id', adminController.patchUsers)
+router.patch('/users/:id', upload.single('image'), adminController.patchUsers)
 
 module.exports = router

@@ -374,7 +374,7 @@ const userServices = {
   postOrder: async (req, cb) => {
     try {
       const reqUserId = req.user.id
-      const products = req.body.product
+      const products = req.body.products
       const tax = 1.1
 
       const productQueries = products.map(async product => {
