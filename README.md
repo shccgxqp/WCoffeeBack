@@ -55,16 +55,18 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 ## 🧐 Features - 專案功能 <a name = "features"></a>
 
   * 消費者 CRUD - 商品瀏覽、加入購物車、創建訂單、結帳付款、訂單瀏覽
-  * 管理員 CRUD - 商品管理、商品分類管理、訂單管理、用戶權限管理
+  * 管理員 CRUD - 商品管理、商品分類管理、訂單管理、用戶權限管理、發送郵件
   * 整合 mocha / chai / supertest 完成單元測試
+  * 整合 Sequelize 實作資料庫的管理與操作
+  * 整合 image，檔案預先載入圖片，實作上傳圖片功能
+  * 整合 cors 實作前後端分離跨域
   * 透過 藍新科技 串接API，實作線上刷卡
+  * 透過 nodemailer 發送郵件，結合handlebars實現郵件模板
   * 透過 passport 實作google、facebook第三方登入
-  * 透過 cors 實作前後端分離跨域
   * 採用 JWT & cookies httpOnly 實作跨域認證
   * 採用 multer 對接前後端檔案程式
-  * 整合 image，檔案預先載入圖片，實作上傳圖片功能
   * 採用 bcrypt 處理使用者密碼
-  * 使用 dotenv 設定環境變數
+  * 採用 dotenv 設定環境變數
 
 ## 🗃️ MySQL - 資料庫架構規劃
 
@@ -73,8 +75,6 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 ## 💡 API Reference - 格式規範
 
 - [PostMan](https://documenter.getpostman.com/view/24870092/2sA2xpTUwA) - 專案的RESTful API 文件，使用PostMan編寫及測試。
-
-
 
 
 ## ⛏️ Built Using - 主要使用  <a name = "built_using"></a>
@@ -157,7 +157,6 @@ npm run dev
 * 連結財政部電子發票API
 * 串接第三方物流
 * 透過數據分析，智能推薦喜愛的風味與烘培度
-* 定期E-MAIL自動關心客戶，提高客戶對品牌的連結
 
 ## 📝 網站開發紀錄
 
