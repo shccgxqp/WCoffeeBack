@@ -108,10 +108,10 @@ const extractTokenFromCookie = req => {
 
 const jwtOptions = {
   jwtFromRequest: ExtractJWT.fromExtractors([
-    extractTokenFromCookie,
     ExtractJWT.fromAuthHeaderAsBearerToken(),
     ExtractJWT.fromHeader('token'),
     ExtractJWT.fromUrlQueryParameter('token'),
+    extractTokenFromCookie,
   ]),
   secretOrKey: process.env.JWT_SECRET,
 }

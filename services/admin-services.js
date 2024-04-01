@@ -245,7 +245,9 @@ const adminServices = {
   },
   getUsers: async (req, cb) => {
     try {
-      const data = await User.findAll()
+      let data = await User.findAll({
+        attributes: ['id', 'last_name', 'first_name', 'email', 'isAdmin', 'phone', 'birthday'],
+      })
       cb(null, data)
     } catch (error) {
       cb(error)

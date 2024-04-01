@@ -1,12 +1,18 @@
 const express = require('express')
 const router = express.Router()
 
-const userController = require('../../../controllers/apis/user-controller')
-const passport = require('../../../config/passport')
 const { authenticated } = require('../../../middleware/api-auth')
+const passport = require('../../../config/passport')
+const upload = require('../../../middleware/multer')
 const authController = require('../../../controllers/apis/auth-controller')
+const userController = require('../../../controllers/apis/user-controller')
 
-router.post('/server/sendEmail', authenticated, authController.sendEmail)
+router.post(
+  '/server/sendEmail/:id',
+  upload.single('image'),
+  authenticated,
+  authController.sendEmail
+)
 
 router.post('/checkLogin', userController.checkLoginFbGl)
 router.get('/login/facebook', passport.authenticate('facebook', { scope: ['email'] }))

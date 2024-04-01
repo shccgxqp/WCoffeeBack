@@ -1,9 +1,17 @@
 const fs = require('fs')
 const nodemailer = require('nodemailer')
 const handlebars = require('handlebars')
-
+const db = require('../models')
+const { User } = db
 const authServices = {
   sendEmail: async (req, cb) => {
+    const { subject, content } = req.body
+    const user = await User.findOne({
+      where: { id: req.params.id },
+      raw: true,
+      attributes: ['id', 'email', 'first_name', 'last_name'],
+    })
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -16,14 +24,14 @@ const authServices = {
     const source = fs.readFileSync('templates/emailTemplate.hbs', 'utf-8')
     const template = handlebars.compile(source)
     const html = template({
-      username: req.user.last_name + req.user.first_name,
-      message: '以下為測試郵件內容',
-      content: req.body.content || '',
+      username: user.last_name + user.first_name,
+      message: '您好您好，測試測試，請別當真 ',
+      content: content || '',
     })
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: req.user.email,
-      subject: '伺服器測試信件',
+      to: user.email,
+      subject: subject,
       text: '測試郵件文字',
       html: html,
     }
