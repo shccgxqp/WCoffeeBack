@@ -16,6 +16,11 @@ const adminController = {
       err ? next(err) : res.json({ status: 'success', data })
     )
   },
+  patchOrderCancelById: (req, res, next) => {
+    adminServices.patchOrderCancelById(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
   deleteOrderById: (req, res, next) => {
     adminServices.deleteOrderById(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })

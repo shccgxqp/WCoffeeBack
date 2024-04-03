@@ -6,8 +6,24 @@ const { errorHandler } = require('../helpers/error-helpers')
 const adminServices = {
   getOrders: async (req, cb) => {
     try {
+      const page = parseInt(req.query.page) || 1
+      const limit = parseInt(req.query.limit) || 8
+      const offset = (page - 1) * limit
+      const totalCount = await Order.count({})
       const orders = await Order.findAll({
-        attributes: ['id', 'sub_total', 'total', 'status', 'comments'],
+        attributes: [
+          'id',
+          'sub_total',
+          'total',
+          'status',
+          'comments',
+          'payment_status',
+          'payment_type',
+          'payment_bank',
+          'payment_act',
+          'created_at',
+          'cancel',
+        ],
         include: [
           { model: User, attributes: ['last_name', 'first_name', 'email'] },
           { model: Shipment, attributes: ['address', 'city', 'state', 'country', 'zip_code'] },
@@ -18,12 +34,15 @@ const adminServices = {
             through: { attributes: ['qty'] },
           },
         ],
+        order: [['created_at', 'DESC']],
         raw: true,
+        offset,
+        limit,
       })
 
       const data = processOrderHandler(orders)
 
-      cb(null, data)
+      cb(null, { totalCount, orders: data })
     } catch (error) {
       cb(error)
     }
@@ -114,6 +133,16 @@ const adminServices = {
       cb(error)
     }
   },
+  patchOrderCancelById: async (req, cb) => {
+    try {
+      const id = req.params.id
+      console.log(id)
+      await Order.update({ cancel: new Date() }, { where: { id } })
+      cb(null, '作廢訂單修改成功')
+    } catch (error) {
+      cb(error)
+    }
+  },
   deleteOrderById: async (req, cb) => {
     try {
       const id = req.params.id
@@ -146,24 +175,28 @@ const adminServices = {
     try {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit)
-        ? Math.min(Math.max(parseInt(req.query.limit), 8), 24)
-        : 8
-      const Category_id = parseInt(req.query.categoryId) || 3
+        ? Math.min(Math.max(parseInt(req.query.limit), 2), 24)
+        : 2
+      const Category_id = parseInt(req.query.category)
+      const totalCount = await Product.count({
+        where: Category_id ? { categoryId: Category_id } : {},
+      })
       const data = await Product.findAll({
-        where: { Category_id },
+        where: Category_id ? { categoryId: Category_id } : {},
         include: [
           { model: Category, attributes: ['name'] },
           { model: Origin, attributes: ['name'] },
           { model: Unit, attributes: ['name'] },
         ],
         offset: (page - 1) * limit,
+        limit,
         raw: true,
       })
-      if (data.length === 0) throw errorHandler('沒有找到商品', 401)
-
-      const products = processProductsHandler(data)
-
-      cb(null, products)
+      if (data.length === 0) cb(null, { totalCount, products: [] })
+      else {
+        const products = processProductsHandler(data)
+        cb(null, { totalCount, products })
+      }
     } catch (error) {
       cb(error)
     }

@@ -7,19 +7,17 @@ const productServices = {
     try {
       const page = parseInt(req.query.page) || 1
       const limit = parseInt(req.query.limit) || 8
-      const Category_id = parseInt(req.query.categoryId) || 3
+      const Category_id = parseInt(req.query.categoryId)
       let message = '沒有找到商品'
 
       const totalCount = await Product.count({
-        where: { Category_id },
-        limit,
-        offset: (page - 1) * limit,
+        where: Category_id ? { categoryId: Category_id } : {},
       })
 
       if (totalCount === 0) cb(null, { message, totalCount, products: [] })
       else {
         const data = await Product.findAll({
-          where: { Category_id },
+          where: Category_id ? { categoryId: Category_id } : {},
           include: [
             { model: Category, attributes: ['name'] },
             { model: Origin, attributes: ['name'] },

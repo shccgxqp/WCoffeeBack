@@ -17,15 +17,15 @@ const processHelpers = {
         payment_act: order.payment_act,
         created_at: order.created_at,
         updated_at: order.updated_at,
-        Shipment: [
-          {
-            address: order['Shipment.address'],
-            city: order['Shipment.city'],
-            state: order['Shipment.state'],
-            country: order['Shipment.country'],
-            zip_code: order['Shipment.zip_code'],
-          },
-        ],
+        cancel: order.cancel,
+        Shipment: {
+          address: order['Shipment.address'],
+          city: order['Shipment.city'],
+          state: order['Shipment.state'],
+          country: order['Shipment.country'],
+          zip_code: order['Shipment.zip_code'],
+        },
+
         OrderItemsProduct: [
           {
             name: order['OrderItemsProduct.name'],

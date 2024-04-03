@@ -14,6 +14,7 @@ router.delete('/products/:id', adminController.deleteProductById)
 router.get('/orders', adminController.getOrders)
 router.get('/orders/:id', adminController.getOrderById)
 router.patch('/orders/:id', adminController.patchOrderById)
+router.patch('/orders/cancel/:id', adminController.patchOrderCancelById)
 router.delete('/orders/:id', adminController.deleteOrderById)
 
 router.get('/users', adminController.getUsers)

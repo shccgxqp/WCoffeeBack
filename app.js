@@ -40,7 +40,7 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(cookieParser())
-app.use('/images', express.static('upload'))
+app.use('/upload', express.static('upload'))
 app.use('/api', apis)
 
 app.listen(port, () => {
