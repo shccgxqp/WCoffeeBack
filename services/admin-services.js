@@ -214,7 +214,7 @@ const adminServices = {
 
       const product = processProductsHandler([data])
 
-      cb(null, product)
+      cb(null, product[0])
     } catch (error) {
       cb(error)
     }
@@ -246,21 +246,22 @@ const adminServices = {
     try {
       const { name, price, weight, roast, description, category_id, origin_id, unit_id } = req.body
       const { file } = req
-      const filePath = await localFileHandler(file)
-      const data = await Product.update(
-        {
-          name,
-          price,
-          weight,
-          roast: roast || null,
-          image: filePath || null,
-          description,
-          categoryId: category_id,
-          originId: origin_id,
-          unitId: unit_id,
-        },
-        { where: { id: req.params.id } }
-      )
+      let updateData = {
+        name,
+        price,
+        weight,
+        roast: roast || null,
+        description,
+        categoryId: category_id,
+        originId: origin_id,
+        unitId: unit_id,
+      }
+      if (file) {
+        const filePath = await localFileHandler(file)
+        updateData.image = filePath
+      }
+
+      const data = await Product.update(updateData, { where: { id: req.params.id } })
       if (data[0] === 1) cb(null, '修改成功')
       else throw errorHandler('修改失敗', 401)
     } catch (error) {
