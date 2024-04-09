@@ -1,6 +1,6 @@
 <p align="center">
   <a href="" rel="noopener">
- <img width=300px height=200px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/bg.jpg?raw=true" alt="Project logo"></a>
+ <img width=300px height=200px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/bg.jpg?raw=true" alt="Project logo"></a>
 </p>
 
 <h3 align="center">wc-coffee-back</h3>
@@ -16,7 +16,7 @@
 
 ---
 
-WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的電子商務後端專案，
+WC-Coffee-Back 是一個使用Node.js + Express + MySQL + PostgreSQL 建立的電子商務後端專案，
 
 以RESTFul API 滿足不同網站的互動需求，配合[WC-Coffee-front](<https://github.com/shccgxqp/WCoffeeFront>)
 前端專案，打造咖啡的電商網站
@@ -31,6 +31,7 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 - [⛏️ Built Using - 主要使用  ](#️-built-using---主要使用--)
 - [⚙️ Installing - 專案安裝流程](#️-installing---專案安裝流程)
 - [🛠️ 更新計畫 - 未來將更新的功能](#️-更新計畫---未來將更新的功能)
+- [🗺️功能邏輯圖](#️功能邏輯圖)
 - [📝 網站開發紀錄](#-網站開發紀錄)
 
 ## 🎈 Initial - 專案介紹 <a name="initial"></a>
@@ -70,7 +71,7 @@ WC-Coffee-Back 是一個使用Node.js + express + MySQL + PostgreSQL 建立的�
 
 ## 🗃️ MySQL - 資料庫架構規劃
 
-<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/ERD.png?raw=true" alt="MySQL ERD">
+<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/ERD.png?raw=true" alt="MySQL ERD">
 
 ## 💡 API Reference - 格式規範
 
@@ -157,6 +158,17 @@ npm run dev
 * 連結財政部電子發票API
 * 串接第三方物流
 * 透過數據分析，智能推薦喜愛的風味與烘培度
+
+
+## 🗺️功能邏輯圖
+
+第三方金流邏輯圖
+
+<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/newwebaby.jpg?raw=true" alt="金流 ERD">
+
+第三方登入邏輯圖
+
+<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/OAuth2.jpg?raw=true" alt="登入 ERD">
 
 ## 📝 網站開發紀錄
 
