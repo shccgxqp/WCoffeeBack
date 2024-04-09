@@ -164,11 +164,11 @@ npm run dev
 
 第三方金流邏輯圖
 
-<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/newwebaby.jpg?raw=true" alt="金流 ERD">
+<img width=600px height=400px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/newwebaby.jpg?raw=true" alt="金流 ERD">
 
 第三方登入邏輯圖
 
-<img width=600px height=600px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/OAuth2.jpg?raw=true" alt="登入 ERD">
+<img width=600px height=400px src="https://github.com/shccgxqp/WCoffeeBack/blob/main/picture/OAuth2.jpg?raw=true" alt="登入 ERD">
 
 ## 📝 網站開發紀錄
 
